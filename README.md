@@ -1,1 +1,1 @@
-# x6100_ng
+# x6100 New Generation
