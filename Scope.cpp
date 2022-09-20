@@ -19,20 +19,21 @@
  *
  */
 
-#include <QPainter>
 #include <QPaintEvent>
 #include <QDebug>
 #include "Scope.h"
 
-Scope::Scope(QWidget *parent) : QOpenGLWidget(parent) {
-	grid_min = -90;
+Scope::Scope(Spectrogram *spectrogram, QWidget *parent) : QOpenGLWidget(parent) {
+	this->spectrogram = spectrogram;
+	chart_pix = new QPixmap();
+
+	grid_min = -100;
 	grid_max = -50;
 	grid_step = 6;
 
 	setAutoFillBackground(false);
 	
 	background = QBrush(QColor(32, 32, 32));
-	clean = QBrush(QColor(0, 0, 0, 32));
 	
 	chart = QPen(QColor(0, 196, 64, 200));
 	chart.setWidth(1);
@@ -41,7 +42,13 @@ Scope::Scope(QWidget *parent) : QOpenGLWidget(parent) {
 	grid.setWidth(1);
 	grid.setStyle(Qt::DashLine);
 	
-	chart_pix = new QPixmap();
+	durty = true;	
+	filter = 0.5f;
+	
+	psd_filter = new float[spectrogram->getNum()];
+	
+	for (int i = 0; i < spectrogram->getNum(); i++)
+		psd_filter[i] = -130.0f;
 }
 
 void Scope::resizeEvent(QResizeEvent *event) {
@@ -50,17 +57,37 @@ void Scope::resizeEvent(QResizeEvent *event) {
 	chart_pix = new QPixmap(spectrogram->getNum(), height());
 }
 
-void Scope::setSpectrogram(Spectrogram *spectrogram) {
-	this->spectrogram = spectrogram;
+void Scope::calcFilter() {
+	float *psd = spectrogram->getPsd();
+
+	for (int i = 0; i < spectrogram->getNum(); i++)
+		psd_filter[i] = durty ? psd[i] : psd_filter[i] * filter + psd[i] * (1.0f - filter);
+
+	if (durty) {
+		durty = false;
+	}
 }
 
 void Scope::paintEvent(QPaintEvent *event) {
-	QPainter painter;
+    // Chart
+
+	chart_pix->fill(Qt::transparent);
+	
+    painter.begin(chart_pix);
+    painter.setPen(chart);
+
+	for (int x = 0; x < chart_pix->width(); x++) {
+		float v = (psd_filter[x] - grid_min) / (grid_max - grid_min);
+		
+		painter.drawLine(x, chart_pix->height(), x, chart_pix->height() * (1.0f - v));
+	}
+    
+    painter.end();
+
+	// Grid
  
     painter.begin(this);
     painter.fillRect(event->rect(), background);
-
-	// Grid
 
     painter.setPen(grid);
     
@@ -71,29 +98,15 @@ void Scope::paintEvent(QPaintEvent *event) {
 		painter.drawLine(0, y, width(), y);
 	}
 
-    for (int x = 0; x < width(); x += width() / 6) {
+    for (int x = 0; x < width(); x += width() / 10) {
 		painter.drawLine(x, 0, x, height());
 	}
-
-    // Chart
-
-	QPainter painter_chart;
-
-	chart_pix->fill(Qt::transparent);
-	
-    painter_chart.begin(chart_pix);
-    painter_chart.setPen(chart);
-
-	float *psd = spectrogram->getPsd();
-
-	for (int x = 0; x < chart_pix->width(); x++) {
-		float v = (psd[x] - grid_min) / (grid_max - grid_min);
-		
-		painter_chart.drawLine(x, chart_pix->height(), x, chart_pix->height() * (1.0f - v));
-	}
-    
-    painter_chart.end();
     
     painter.drawPixmap(0, 0, chart_pix->scaledToWidth(width(), Qt::SmoothTransformation));
     painter.end();
+}
+
+void Scope::setFilter(float f) {
+	filter = f;
+	durty = true;
 }

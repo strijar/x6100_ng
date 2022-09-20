@@ -23,16 +23,16 @@
 #include "Spectrogram.h"
 
 Spectrogram::Spectrogram() : QObject() {
-	q = spgramcf_create(nfft, LIQUID_WINDOW_HANN, nfft, nfft / 8);
+	nfft = 800;
+
+	q = spgramcf_create(nfft, LIQUID_WINDOW_HANN, nfft, nfft / 2);
 	
 	psd = new float[nfft];
-	psd_filter = new float[nfft];
+	buf = new std::complex<float>[nfft];
+	mutex = new QMutex();
 	
 	for (int i = 0; i < nfft; i++)
-		psd_filter[i] = 0;
-	
-	buf = new std::complex<float>[nfft];
-	durty = true;
+		psd[i] = -130.0f;
 }
 
 Spectrogram::~Spectrogram() {
@@ -40,11 +40,8 @@ Spectrogram::~Spectrogram() {
 	
 	delete[] buf;
 	delete[] psd;
-}
-
-void Spectrogram::setFilter(float f) {
-	filter = f;
-	durty = true;
+	
+	delete mutex;
 }
 
 void Spectrogram::setSamples(const QVariantList& samples) {
@@ -59,19 +56,14 @@ void Spectrogram::setSamples(const QVariantList& samples) {
 	}
 
 	spgramcf_write(q, buf, samples.size() / 2);
+	
+	mutex->lock();
 	spgramcf_get_psd(q, psd);
-
-	for (int i = 0; i < nfft; i++)
-		psd_filter[i] = durty ? psd[i] : psd_filter[i] * filter + psd[i] * (1.0f - filter);
-	
-	if (durty)
-		durty = false;
-	
-	emit changed();
+	mutex->unlock();
 }
 
 float* Spectrogram::getPsd() {
-	return psd_filter;
+	return psd;
 }
 
 unsigned int Spectrogram::getNum() {
@@ -80,4 +72,12 @@ unsigned int Spectrogram::getNum() {
 
 void Spectrogram::reset() {
 	spgramcf_reset(q);
+}
+
+void Spectrogram::lock() {
+	mutex->lock();
+}
+
+void Spectrogram::unlock() {
+	mutex->unlock();
 }

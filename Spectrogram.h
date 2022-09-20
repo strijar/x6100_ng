@@ -23,6 +23,7 @@
 
 #include <QObject>
 #include <QVariant>
+#include <QMutex>
 #include <complex>
 #include <liquid/liquid.h>
 
@@ -35,8 +36,9 @@ public:
 	virtual ~Spectrogram();
 
 	void setSamples(const QVariantList& samples);
-	void setFilter(float f);
 	void reset();
+	void lock();
+	void unlock();
 	
 	float* getPsd();
 	unsigned int getNum();
@@ -47,10 +49,8 @@ signals:
 private:
 	spgramcf				q;
 	
-	unsigned int			nfft = 512;
-	float					filter = 0.5f;
-	bool					durty;
+	unsigned int			nfft;
 	std::complex<float>		*buf;
 	float					*psd;
-	float					*psd_filter;
+	QMutex					*mutex;
 };

@@ -19,19 +19,30 @@
  *
  */
 
+#include <QVBoxLayout>
 #include "MainWindow.h"
 
 MainWindow::MainWindow(QWidget *parent) : QWidget(parent), wamp(parent), spectrogram() {
 	setFixedSize(800, 480);
 	
-	spectrogram.setFilter(0.75f);
-
+	QVBoxLayout *layout = new QVBoxLayout(this);
+	
 	wamp.setSpectrogram(&spectrogram);
 	wamp.doConnect();
 	
-	scope = new Scope(this);
+	scope = new Scope(&spectrogram);
 	scope->setFixedSize(800, 480 / 2);
-	scope->setSpectrogram(&spectrogram);
+	scope->setFilter(0.75f);
+
+	waterfall = new Waterfall(&spectrogram);
+	waterfall->setFixedSize(800, 480 / 2);
+	waterfall->setFilter(0.25f);
+
+	layout->setMargin(0);
+	layout->setSpacing(0);
+	
+	layout->addWidget(scope);
+	layout->addWidget(waterfall);
 	
 	timer = new QTimer();
 	connect(timer, SIGNAL(timeout()), this, SLOT(updateSpectrogram()));
@@ -39,6 +50,12 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent), wamp(parent), spectro
 }
 
 void MainWindow::updateSpectrogram() {
+	spectrogram.lock();
+	scope->calcFilter();
+	waterfall->calcFilter();
+	spectrogram.unlock();
+	
 	scope->update();
+	waterfall->update();
 	spectrogram.reset();
 }

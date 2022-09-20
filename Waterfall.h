@@ -28,14 +28,14 @@
 #include <QPainter>
 #include "Spectrogram.h"
 
-class Scope : public QOpenGLWidget
+class Waterfall : public QOpenGLWidget
 {
 	Q_OBJECT
 public:
-	explicit Scope(Spectrogram *spectrogram, QWidget *parent = 0);
+	explicit Waterfall(Spectrogram *spectrogram, QWidget *parent = 0);
     void setFilter(float f);
     void calcFilter();
-
+    
 protected:
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event);
@@ -51,12 +51,9 @@ private:
 	bool			durty;
 
 	QPixmap			*chart_pix;
-	QBrush 			background;
-	QPen 			chart;
-	QPen			grid;
 	QPainter 		painter;
+	QPen 			pen;
 	
-	int				grid_min = -110;
-	int				grid_max = -50;
-	int				grid_step = 6;
+	int				db_min = -110;
+	int				db_max = -50;
 };

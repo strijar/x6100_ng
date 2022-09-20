@@ -17,7 +17,10 @@ UI_DIR = $$DESTDIR/.ui
 CONFIG += c++11
 
 SOURCES += WampClient.cpp MainWindow.cpp Spectrogram.cpp Scope.cpp main.cpp
+SOURCES += Waterfall.cpp
+
 HEADERS += WampClient.h MainWindow.h Spectrogram.h Scope.h
+HEADERS += Waterfall.h
 
 LIBS += -lqwamp -lqmsgpack -lliquid
 

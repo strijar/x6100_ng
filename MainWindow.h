@@ -26,6 +26,7 @@
 #include "WampClient.h"
 #include "Spectrogram.h"
 #include "Scope.h"
+#include "Waterfall.h"
 
 class MainWindow : public QWidget 
 {
@@ -42,5 +43,6 @@ private:
 	WampClient		wamp;
 	Spectrogram		spectrogram;
 	Scope			*scope;
+	Waterfall		*waterfall;
 	QTimer			*timer;
 };
