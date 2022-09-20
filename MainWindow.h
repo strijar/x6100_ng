@@ -22,6 +22,7 @@
 #pragma once
 
 #include <QWidget>
+#include <QTimer>
 #include "WampClient.h"
 #include "Spectrogram.h"
 #include "Scope.h"
@@ -35,10 +36,11 @@ public:
 signals:
 
 public slots:
-	void spectrogramChanged();
+	void updateSpectrogram();
 	
 private:
 	WampClient		wamp;
 	Spectrogram		spectrogram;
 	Scope			*scope;
+	QTimer			*timer;
 };

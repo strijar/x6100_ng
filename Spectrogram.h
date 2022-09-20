@@ -36,6 +36,7 @@ public:
 
 	void setSamples(const QVariantList& samples);
 	void setFilter(float f);
+	void reset();
 	
 	float* getPsd();
 	unsigned int getNum();
@@ -46,7 +47,7 @@ signals:
 private:
 	spgramcf				q;
 	
-	unsigned int			nfft = 800;
+	unsigned int			nfft = 512;
 	float					filter = 0.5f;
 	bool					durty;
 	std::complex<float>		*buf;

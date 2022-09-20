@@ -25,15 +25,29 @@
 #include "Scope.h"
 
 Scope::Scope(QWidget *parent) : QOpenGLWidget(parent) {
-	min_db = -90.0f;
-	max_db = -50.0f;
+	grid_min = -90;
+	grid_max = -50;
+	grid_step = 6;
 
 	setAutoFillBackground(false);
 	
 	background = QBrush(QColor(32, 32, 32));
+	clean = QBrush(QColor(0, 0, 0, 32));
 	
-	lines = QPen(QColor(64, 200, 64));
-	lines.setWidth(1);
+	chart = QPen(QColor(0, 196, 64, 200));
+	chart.setWidth(1);
+
+	grid = QPen(QColor(200, 200, 200));
+	grid.setWidth(1);
+	grid.setStyle(Qt::DashLine);
+	
+	chart_pix = new QPixmap();
+}
+
+void Scope::resizeEvent(QResizeEvent *event) {
+	delete chart_pix;
+	
+	chart_pix = new QPixmap(spectrogram->getNum(), height());
 }
 
 void Scope::setSpectrogram(Spectrogram *spectrogram) {
@@ -44,18 +58,42 @@ void Scope::paintEvent(QPaintEvent *event) {
 	QPainter painter;
  
     painter.begin(this);
-    painter.setRenderHint(QPainter::Antialiasing);
-    
     painter.fillRect(event->rect(), background);
-    painter.setPen(lines);
+
+	// Grid
+
+    painter.setPen(grid);
+    
+    for (int db = grid_min; db < grid_max; db += grid_step) {
+		float 	v = (float)(db - grid_min) / (grid_max - grid_min);
+		int		y = height() * (1.0f - v);
+	
+		painter.drawLine(0, y, width(), y);
+	}
+
+    for (int x = 0; x < width(); x += width() / 6) {
+		painter.drawLine(x, 0, x, height());
+	}
+
+    // Chart
+
+	QPainter painter_chart;
+
+	chart_pix->fill(Qt::transparent);
+	
+    painter_chart.begin(chart_pix);
+    painter_chart.setPen(chart);
 
 	float *psd = spectrogram->getPsd();
 
-	for (unsigned int x = 0; x < spectrogram->getNum(); x++) {
-		float v = (psd[x] - min_db) / (max_db - min_db);
+	for (int x = 0; x < chart_pix->width(); x++) {
+		float v = (psd[x] - grid_min) / (grid_max - grid_min);
 		
-		painter.drawLine(x, height(), x, height() * (1.0 - v));
+		painter_chart.drawLine(x, chart_pix->height(), x, chart_pix->height() * (1.0f - v));
 	}
     
+    painter_chart.end();
+    
+    painter.drawPixmap(0, 0, chart_pix->scaledToWidth(width(), Qt::SmoothTransformation));
     painter.end();
 }

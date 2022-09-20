@@ -22,6 +22,7 @@
 #pragma once
 
 #include <QOpenGLWidget>
+#include <QPixmap>
 #include <QPen>
 #include <QBrush>
 #include "Spectrogram.h"
@@ -35,15 +36,21 @@ public:
     
 protected:
     void paintEvent(QPaintEvent *event) override;
-    
+    void resizeEvent(QResizeEvent *event);
+
 signals:
 
 public slots:
 	
 private:
 	Spectrogram		*spectrogram;
+	QPixmap			*chart_pix;
 	QBrush 			background;
-	QPen 			lines;
-	float			min_db = -110.0f;
-	float			max_db = -50.0f;
+	QBrush 			clean;
+	QPen 			chart;
+	QPen			grid;
+	
+	int				grid_min = -110;
+	int				grid_max = -50;
+	int				grid_step = 6;
 };

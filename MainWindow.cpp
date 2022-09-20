@@ -24,8 +24,6 @@
 MainWindow::MainWindow(QWidget *parent) : QWidget(parent), wamp(parent), spectrogram() {
 	setFixedSize(800, 480);
 	
-	connect(&spectrogram, SIGNAL(changed()), this, SLOT(spectrogramChanged()));
-
 	spectrogram.setFilter(0.75f);
 
 	wamp.setSpectrogram(&spectrogram);
@@ -34,8 +32,13 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent), wamp(parent), spectro
 	scope = new Scope(this);
 	scope->setFixedSize(800, 480 / 2);
 	scope->setSpectrogram(&spectrogram);
+	
+	timer = new QTimer();
+	connect(timer, SIGNAL(timeout()), this, SLOT(updateSpectrogram()));
+	timer->start(1000 / 25);
 }
 
-void MainWindow::spectrogramChanged() {
+void MainWindow::updateSpectrogram() {
 	scope->update();
+	spectrogram.reset();
 }

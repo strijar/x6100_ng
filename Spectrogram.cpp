@@ -60,7 +60,6 @@ void Spectrogram::setSamples(const QVariantList& samples) {
 
 	spgramcf_write(q, buf, samples.size() / 2);
 	spgramcf_get_psd(q, psd);
-	spgramcf_reset(q);
 
 	for (int i = 0; i < nfft; i++)
 		psd_filter[i] = durty ? psd[i] : psd_filter[i] * filter + psd[i] * (1.0f - filter);
@@ -77,4 +76,8 @@ float* Spectrogram::getPsd() {
 
 unsigned int Spectrogram::getNum() {
 	return nfft;
+}
+
+void Spectrogram::reset() {
+	spgramcf_reset(q);
 }
