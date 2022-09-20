@@ -16,10 +16,10 @@ UI_DIR = $$DESTDIR/.ui
 
 CONFIG += c++11
 
-SOURCES += WampClient.cpp MainWindow.cpp main.cpp
-HEADERS += WampClient.h MainWindow.h
+SOURCES += WampClient.cpp MainWindow.cpp Spectrogram.cpp Scope.cpp main.cpp
+HEADERS += WampClient.h MainWindow.h Spectrogram.h Scope.h
 
-LIBS += -lqwamp -lqmsgpack
+LIBS += -lqwamp -lqmsgpack -lliquid
 
 QT += core gui
 QT += widgets

@@ -19,23 +19,43 @@
  *
  */
 
-#include "MainWindow.h"
+#include <QPainter>
+#include <QPaintEvent>
+#include <QDebug>
+#include "Scope.h"
 
-MainWindow::MainWindow(QWidget *parent) : QWidget(parent), wamp(parent), spectrogram() {
-	setFixedSize(800, 480);
+Scope::Scope(QWidget *parent) : QOpenGLWidget(parent) {
+	min_db = -90.0f;
+	max_db = -50.0f;
+
+	setAutoFillBackground(false);
 	
-	connect(&spectrogram, SIGNAL(changed()), this, SLOT(spectrogramChanged()));
-
-	spectrogram.setFilter(0.75f);
-
-	wamp.setSpectrogram(&spectrogram);
-	wamp.doConnect();
+	background = QBrush(QColor(32, 32, 32));
 	
-	scope = new Scope(this);
-	scope->setFixedSize(800, 480 / 2);
-	scope->setSpectrogram(&spectrogram);
+	lines = QPen(QColor(64, 200, 64));
+	lines.setWidth(1);
 }
 
-void MainWindow::spectrogramChanged() {
-	scope->update();
+void Scope::setSpectrogram(Spectrogram *spectrogram) {
+	this->spectrogram = spectrogram;
+}
+
+void Scope::paintEvent(QPaintEvent *event) {
+	QPainter painter;
+ 
+    painter.begin(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+    
+    painter.fillRect(event->rect(), background);
+    painter.setPen(lines);
+
+	float *psd = spectrogram->getPsd();
+
+	for (unsigned int x = 0; x < spectrogram->getNum(); x++) {
+		float v = (psd[x] - min_db) / (max_db - min_db);
+		
+		painter.drawLine(x, height(), x, height() * (1.0 - v));
+	}
+    
+    painter.end();
 }

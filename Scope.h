@@ -19,23 +19,31 @@
  *
  */
 
-#include "MainWindow.h"
+#pragma once
 
-MainWindow::MainWindow(QWidget *parent) : QWidget(parent), wamp(parent), spectrogram() {
-	setFixedSize(800, 480);
+#include <QOpenGLWidget>
+#include <QPen>
+#include <QBrush>
+#include "Spectrogram.h"
+
+class Scope : public QOpenGLWidget
+{
+	Q_OBJECT
+public:
+	explicit Scope(QWidget *parent = 0);
+    void setSpectrogram(Spectrogram *spectrogram);
+    
+protected:
+    void paintEvent(QPaintEvent *event) override;
+    
+signals:
+
+public slots:
 	
-	connect(&spectrogram, SIGNAL(changed()), this, SLOT(spectrogramChanged()));
-
-	spectrogram.setFilter(0.75f);
-
-	wamp.setSpectrogram(&spectrogram);
-	wamp.doConnect();
-	
-	scope = new Scope(this);
-	scope->setFixedSize(800, 480 / 2);
-	scope->setSpectrogram(&spectrogram);
-}
-
-void MainWindow::spectrogramChanged() {
-	scope->update();
-}
+private:
+	Spectrogram		*spectrogram;
+	QBrush 			background;
+	QPen 			lines;
+	float			min_db = -110.0f;
+	float			max_db = -50.0f;
+};

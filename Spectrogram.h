@@ -19,23 +19,37 @@
  *
  */
 
-#include "MainWindow.h"
+#pragma once
 
-MainWindow::MainWindow(QWidget *parent) : QWidget(parent), wamp(parent), spectrogram() {
-	setFixedSize(800, 480);
+#include <QObject>
+#include <QVariant>
+#include <complex>
+#include <liquid/liquid.h>
+
+class Spectrogram : public QObject
+{
+	Q_OBJECT
 	
-	connect(&spectrogram, SIGNAL(changed()), this, SLOT(spectrogramChanged()));
+public:
+	Spectrogram();
+	virtual ~Spectrogram();
 
-	spectrogram.setFilter(0.75f);
-
-	wamp.setSpectrogram(&spectrogram);
-	wamp.doConnect();
+	void setSamples(const QVariantList& samples);
+	void setFilter(float f);
 	
-	scope = new Scope(this);
-	scope->setFixedSize(800, 480 / 2);
-	scope->setSpectrogram(&spectrogram);
-}
-
-void MainWindow::spectrogramChanged() {
-	scope->update();
-}
+	float* getPsd();
+	unsigned int getNum();
+	
+signals:	
+	void changed();
+	
+private:
+	spgramcf				q;
+	
+	unsigned int			nfft = 800;
+	float					filter = 0.5f;
+	bool					durty;
+	std::complex<float>		*buf;
+	float					*psd;
+	float					*psd_filter;
+};
