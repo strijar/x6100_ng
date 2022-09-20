@@ -25,7 +25,7 @@
 Spectrogram::Spectrogram() : QObject() {
 	nfft = 800;
 
-	q = spgramcf_create(nfft, LIQUID_WINDOW_HANN, nfft, nfft / 2);
+	q = spgramcf_create(nfft, LIQUID_WINDOW_HANN, nfft, nfft / 4);
 	
 	psd = new float[nfft];
 	buf = new std::complex<float>[nfft];

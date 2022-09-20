@@ -32,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent), wamp(parent), spectro
 	
 	scope = new Scope(&spectrogram);
 	scope->setFixedSize(800, 480 / 2);
-	scope->setFilter(0.75f);
+	scope->setFilter(0.5f);
 
 	waterfall = new Waterfall(&spectrogram);
 	waterfall->setFixedSize(800, 480 / 2);
@@ -46,7 +46,7 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent), wamp(parent), spectro
 	
 	timer = new QTimer();
 	connect(timer, SIGNAL(timeout()), this, SLOT(updateSpectrogram()));
-	timer->start(1000 / 25);
+	timer->start(1000 / 10);
 }
 
 void MainWindow::updateSpectrogram() {

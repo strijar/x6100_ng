@@ -42,6 +42,27 @@ Waterfall::Waterfall(Spectrogram *spectrogram, QWidget *parent) : QOpenGLWidget(
 	
 	for (int i = 0; i < spectrogram->getNum(); i++)
 		psd_filter[i] = -130.0f;
+
+	gradient_steps = 255;
+	
+	gradient = new QLinearGradient(0, 0, gradient_steps, 0);
+
+	gradient->setColorAt(0, Qt::black);
+	gradient->setColorAt(0.25, Qt::blue);
+	gradient->setColorAt(0.5, Qt::red);
+	gradient->setColorAt(0.75, Qt::yellow);
+	gradient->setColorAt(1, Qt::white);
+
+	QImage gradient_img(gradient_steps, 1, QImage::Format_RGB888);
+	
+	painter.begin(&gradient_img);
+	painter.fillRect(gradient_img.rect(), *gradient);
+	painter.end();
+	
+	gradient_color = new QColor[gradient_steps]();
+	
+	for (int i = 0; i < gradient_steps; i++)
+		gradient_color[i] = gradient_img.pixelColor(i, 0);
 }
 
 void Waterfall::resizeEvent(QResizeEvent *event) {
@@ -65,7 +86,9 @@ void Waterfall::paintEvent(QPaintEvent *event) {
 			v = 1.0f;
 		}
 	
-		pen.setColor(QColor(v * 10, v * 255, v * 10));
+		int index = v * gradient_steps;
+	
+		pen.setColor(gradient_color[index]);
 		painter.setPen(pen);
 		painter.drawPoint(x, 0);
 	}

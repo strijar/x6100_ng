@@ -23,9 +23,11 @@
 
 #include <QOpenGLWidget>
 #include <QPixmap>
+#include <QImage>
 #include <QPen>
 #include <QBrush>
 #include <QPainter>
+#include <QLinearGradient>
 #include "Spectrogram.h"
 
 class Waterfall : public QOpenGLWidget
@@ -49,6 +51,10 @@ private:
 	float			*psd_filter;
 	float			filter;
 	bool			durty;
+
+	QLinearGradient	*gradient;
+	QColor			*gradient_color;
+	int				gradient_steps;
 
 	QPixmap			*chart_pix;
 	QPainter 		painter;

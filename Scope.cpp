@@ -35,7 +35,7 @@ Scope::Scope(Spectrogram *spectrogram, QWidget *parent) : QOpenGLWidget(parent) 
 	
 	background = QBrush(QColor(32, 32, 32));
 	
-	chart = QPen(QColor(0, 196, 64, 200));
+	chart = QPen(QColor(255, 255, 255, 128));
 	chart.setWidth(1);
 
 	grid = QPen(QColor(200, 200, 200));
