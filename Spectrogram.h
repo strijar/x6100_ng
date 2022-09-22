@@ -48,9 +48,11 @@ signals:
 	
 private:
 	spgramcf				q;
+	iirfilt_cccf			dc_block;
 	
 	unsigned int			nfft;
-	std::complex<float>		*buf;
+	std::complex<float>		*buf_samples;
+	std::complex<float>		*buf_filtered;
 	float					*psd;
 	QMutex					*mutex;
 };

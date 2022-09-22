@@ -26,9 +26,11 @@ Spectrogram::Spectrogram() : QObject() {
 	nfft = 800;
 
 	q = spgramcf_create(nfft, LIQUID_WINDOW_HANN, nfft, nfft / 4);
+	dc_block = iirfilt_cccf_create_dc_blocker(0.01f);
 	
 	psd = new float[nfft];
-	buf = new std::complex<float>[nfft];
+	buf_samples = new std::complex<float>[nfft];
+	buf_filtered = new std::complex<float>[nfft];
 	mutex = new QMutex();
 	
 	for (int i = 0; i < nfft; i++)
@@ -38,7 +40,8 @@ Spectrogram::Spectrogram() : QObject() {
 Spectrogram::~Spectrogram() {
 	spgramcf_destroy(q);
 	
-	delete[] buf;
+	delete[] buf_samples;
+	delete[] buf_filtered;
 	delete[] psd;
 	
 	delete mutex;
@@ -47,15 +50,17 @@ Spectrogram::~Spectrogram() {
 void Spectrogram::setSamples(const QVariantList& samples) {
 	auto	it = samples.begin();
 	int		index = 0;
+	int		size = samples.size() / 2;
 	
 	while (it != samples.end()) {
-		buf[index].imag(it->toFloat()); it++;
-		buf[index].real(it->toFloat());	it++;
+		buf_samples[index].imag(it->toFloat()); it++;
+		buf_samples[index].real(it->toFloat());	it++;
 
 		index++; 
 	}
 
-	spgramcf_write(q, buf, samples.size() / 2);
+	iirfilt_cccf_execute_block(dc_block, buf_samples, size, buf_filtered);
+	spgramcf_write(q, buf_filtered, size);
 	
 	mutex->lock();
 	spgramcf_get_psd(q, psd);
